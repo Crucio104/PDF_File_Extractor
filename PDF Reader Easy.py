@@ -1,17 +1,18 @@
 import PyPDF2
-import re
-import os
 import sys
+from docx import Document
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QPushButton, QTextEdit, QFileDialog, 
                              QLabel, QProgressBar, QMessageBox)
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 
 class PDFExtractorGUI(QMainWindow): 
     def __init__(self):
         super().__init__()
         self.file_path = None  
         self.initUI()
+        self.setWindowIcon(QIcon("C:/Users/aless/Downloads/pdf.ico"))
         self.setStyleSheet("""
         QMainWindow {
             background-color: #f5f5f7;
@@ -98,7 +99,7 @@ class PDFExtractorGUI(QMainWindow):
         }
         QProgressBar::chunk {
             background-color: #228b22;
-            border-radius: 4px;
+            border-radius: 3px;
         }
     """)
     
@@ -125,7 +126,6 @@ class PDFExtractorGUI(QMainWindow):
         self.progress_bar.setFormat("")
         self.progress_bar.setVisible(True)
         
-        
         self.extract_btn = QPushButton("Extract Text")
         self.extract_btn.clicked.connect(self.extract_text)
         self.extract_btn.setEnabled(False) 
@@ -133,6 +133,10 @@ class PDFExtractorGUI(QMainWindow):
         self.text_area = QTextEdit()
         self.text_area.setPlaceholderText("Extracted text will appear here...")
         self.text_area.setReadOnly(True)
+        
+        self.save_status_label = QLabel("")
+        self.save_status_label.setStyleSheet("color: green; font-size: 13px;")
+        self.save_status_label.setAlignment(Qt.AlignCenter)
         
         self.save_btn = QPushButton("Save Text")
         self.save_btn.clicked.connect(self.save_text)
@@ -142,6 +146,7 @@ class PDFExtractorGUI(QMainWindow):
         layout.addWidget(self.progress_bar)
         layout.addWidget(self.extract_btn)  
         layout.addWidget(self.text_area)
+        layout.addWidget(self.save_status_label)
         layout.addWidget(self.save_btn)          
     
     def select_file(self):
@@ -153,6 +158,8 @@ class PDFExtractorGUI(QMainWindow):
             self.file_label.setText(file_path.split('/')[-1])
             self.extract_btn.setEnabled(True)
             self.progress_bar.setValue(0)
+            self.save_status_label.setText("")
+            self.text_area.clear()
     
     def extract_text(self):
         try:
@@ -178,15 +185,26 @@ class PDFExtractorGUI(QMainWindow):
             
     
     def save_text(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save Text File", "", "Text Files (*.txt)")
+        default_name = self.file_path.split('/')[-1].replace("pdf", "txt")
+        file_path, selected_filter = QFileDialog.getSaveFileName(self, "Save Text File", default_name , "Text Files (*.txt);;Word Files (*.docx)")
         if file_path:
             try:
-                with open(file_path, "w", encoding="utf-8") as file:
-                    file.write(self.text_area.toPlainText())
-                QMessageBox.information(self, "Success", "Text saved successfully!")
+                if selected_filter == "Word Files (*.docx)" or file_path.endswith(".docx"):
+                    doc = Document()
+                    doc.add_paragraph(self.text_area.toPlainText())
+                    if not file_path.endswith(".docx"):
+                        file_path += ".docx"
+                    doc.save(file_path)
+                else:
+                    if not file_path.endswith(".txt"):
+                        file_path += ".txt"
+                    with open(file_path, "w", encoding="utf-8") as file:
+                        file.write(self.text_area.toPlainText())
+                self.save_status_label.setText("Saved successfully!")
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
-
+                self.save_status_label.setStyleSheet("color: red; font-size: 13px;")
+                self.save_status_label.setText(f"Error during saving process: {e}")
+# ...existing code...
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = PDFExtractorGUI()
