@@ -7,15 +7,104 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QLabel, QProgressBar, QMessageBox)
 from PyQt5.QtCore import Qt
 
-class PDFExtractorGUI(QMainWindow):  # CORRETTO: rimuovi (self)
+class PDFExtractorGUI(QMainWindow): 
     def __init__(self):
         super().__init__()
-        self.file_path = None  # Aggiungi questa linea
+        self.file_path = None  
         self.initUI()
+        self.setStyleSheet("""
+        QMainWindow {
+            background-color: #f5f5f7;
+        }
+        QWidget {
+            background-color: #f5f5f7;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        QLabel {
+            color: #2c3e50;
+            font-size: 15px;
+            padding: 5px;
+        }
+        
+        QTextEdit QScrollBar:vertical {
+        border: none;
+        background-color: #f1f3f4;
+        width: 14px;
+        border-radius: 7px;
+        margin: 2px;
+        }
+        
+        QTextEdit QScrollBar::handle:vertical {
+            background-color: #cbd5e0;
+            border-radius: 7px;
+            min-height: 40px;
+        }
+        
+        QTextEdit QScrollBar::handle:vertical:hover {
+            background-color: #a0aec0;
+        }
+        
+        QTextEdit QScrollBar::handle:vertical:pressed {
+            background-color: #718096;
+        }
+        
+        QTextEdit QScrollBar::add-line:vertical, 
+        QTextEdit QScrollBar::sub-line:vertical {
+            height: 0px;
+        }
+        
+        QTextEdit QScrollBar::add-page:vertical, 
+        QTextEdit QScrollBar::sub-page:vertical {
+            background: none;
+        }
+        
+        QPushButton {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        QPushButton:hover {
+            background-color: #2980b9;
+        }
+        QPushButton:pressed {
+            background-color: #21618c;
+        }
+        QPushButton:disabled {
+            background-color: #bdc3c7;
+            color: #7f8c8d;
+        }
+        QTextEdit {
+            background-color: white;
+            border: 2px solid #dce4ec;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+        QTextEdit:disabled {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+        }
+        QProgressBar {
+            border: 2px solid #dce4ec;
+            border-radius: 4px;
+            text-align: center;
+            background-color: white;
+            color: #2c3e50;
+        }
+        QProgressBar::chunk {
+            background-color: #228b22;
+            border-radius: 4px;
+        }
+    """)
     
     def initUI(self):
         self.setWindowTitle("PDF Text Extractor")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 600, 600)
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -31,23 +120,27 @@ class PDFExtractorGUI(QMainWindow):  # CORRETTO: rimuovi (self)
         file_layout.addWidget(self.select_btn)
         
         self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
+        self.progress_bar.setAlignment(Qt.AlignCenter)
+        self.progress_bar.setMaximumHeight(12)
+        self.progress_bar.setFormat("")
+        self.progress_bar.setVisible(True)
         
-        # AGGIUNGI QUESTO PULSANTE MANCANTE:
+        
         self.extract_btn = QPushButton("Extract Text")
         self.extract_btn.clicked.connect(self.extract_text)
-        self.extract_btn.setEnabled(False)  # Disabilitato inizialmente
+        self.extract_btn.setEnabled(False) 
         
         self.text_area = QTextEdit()
         self.text_area.setPlaceholderText("Extracted text will appear here...")
+        self.text_area.setReadOnly(True)
         
         self.save_btn = QPushButton("Save Text")
         self.save_btn.clicked.connect(self.save_text)
-        self.save_btn.setEnabled(False)  # Disabilitato inizialmente
+        self.save_btn.setEnabled(False)  
         
         layout.addLayout(file_layout)
         layout.addWidget(self.progress_bar)
-        layout.addWidget(self.extract_btn)  # AGGIUNGI QUESTO
+        layout.addWidget(self.extract_btn)  
         layout.addWidget(self.text_area)
         layout.addWidget(self.save_btn)          
     
@@ -59,6 +152,7 @@ class PDFExtractorGUI(QMainWindow):  # CORRETTO: rimuovi (self)
             self.file_path = file_path
             self.file_label.setText(file_path.split('/')[-1])
             self.extract_btn.setEnabled(True)
+            self.progress_bar.setValue(0)
     
     def extract_text(self):
         try:
@@ -74,20 +168,17 @@ class PDFExtractorGUI(QMainWindow):  # CORRETTO: rimuovi (self)
                     extracted_text += page.extract_text() + "\n\n"
                     self.progress_bar.setValue(int((i+1)/total_pages * 100))
                     QApplication.processEvents()
-                
+                self.text_area.setReadOnly(False)
                 self.text_area.setPlainText(extracted_text)
                 self.save_btn.setEnabled(True)
                 
         except Exception as e:
+            self.text_area.setReadOnly(True)
             QMessageBox.critical(self, "Error", f"Failed to extract text: {e}")
             
-        finally:
-            self.progress_bar.setVisible(False)
     
     def save_text(self):
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Text File", "", "Text Files (*.txt)")
-        
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Text File", "", "Text Files (*.txt)")
         if file_path:
             try:
                 with open(file_path, "w", encoding="utf-8") as file:
