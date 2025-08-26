@@ -1,0 +1,33 @@
+ACSAI, Calculus Unit 1 a.a. 2021 /22 - January 21st 2022- Prof. Nadia Ansini B
+First name: Last name: Matricola:
+Exercise 1 Using the following Taylor Polynomial expansions at x=0
+cosx=nX
+h=0(1)hx2h
+(2h)!+o(x2n+1);
+sinx=nX
+h=0(1)hx2h+1
+(2h+1)!+o(x2n+2);
+ex=nX
+h=0xh
+h!+o(xn)
+compute the following limit
+lim
+x!0cosx2ex
+sin(x):
+Exercise 2 Solve the following inequalities and write in terms of intervals
+(a) x22x+22x1 ,
+(b)p
+x29x>x4 ,
+(c) (2 x1)j3x+1j.
+(d) Using the properties of the logarithm (and rearranging the terms...) solve the following inequality log 62x<log 2x+1,
+2
+Exercise 3 Given the function
+f(x)=3p
+3+x1
+1. ﬁnd the domain of f, symmetries and study the sign of f;
+2. ﬁnd the continuity and di erentiability set and precise the type of discontinuities and non-di erentiability points (if
+there exist), asymptotes;
+3. ﬁnd maximum, minimum and ﬂex points (if there exist);
+4. intervals of monotonicity of the function fand the derivative f0, intervals of convexity and concavity;
+5. draw the rough graph.
+3
