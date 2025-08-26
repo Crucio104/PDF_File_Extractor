@@ -1,4 +1,3 @@
-import PyPDF2
 import sys
 from docx import Document
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
@@ -6,6 +5,9 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QLabel, QProgressBar, QMessageBox)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
+import pdfplumber
+import pytesseract
+from PIL import Image, ImageFilter, ImageOps
 
 class PDFExtractorGUI(QMainWindow): 
     def __init__(self):
@@ -166,13 +168,22 @@ class PDFExtractorGUI(QMainWindow):
             self.progress_bar.setVisible(True)
             self.progress_bar.setValue(0)
             
-            with open(self.file_path, "rb") as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                total_pages = len(pdf_reader.pages)
+            with pdfplumber.open(self.file_path) as pdf:
+                total_pages = len(pdf.pages)
                 extracted_text = ""
-                
-                for i, page in enumerate(pdf_reader.pages):
-                    extracted_text += page.extract_text() + "\n\n"
+                for i, page in enumerate(pdf.pages):
+                    text = page.extract_text()
+                    if text:
+                        extracted_text += text + "\n\n"
+                    else:
+                        pil_image = page.to_image(resolution=300).original
+                        pil_image = pil_image.convert("L")
+                        pil_image = ImageOps.autocontrast(pil_image)
+                        pil_image = pil_image.point(lambda x: 0 if x < 150 else 255, '1')
+                        pil_image = pil_image.filter(ImageFilter.MedianFilter(size=3))
+
+                        ocr_text = pytesseract.image_to_string(pil_image)
+                        extracted_text += ocr_text + "\n\n"
                     self.progress_bar.setValue(int((i+1)/total_pages * 100))
                     QApplication.processEvents()
                 self.text_area.setReadOnly(False)
@@ -181,7 +192,9 @@ class PDFExtractorGUI(QMainWindow):
                 
         except Exception as e:
             self.text_area.setReadOnly(True)
-            QMessageBox.critical(self, "Error", f"Failed to extract text: {e}")
+            self.save_btn.setEnabled(False)
+            self.save_status_label.setStyleSheet("color: red; font-size: 13px;")
+            self.save_status_label.setText(f"Errore nell'estrazione: {e}")
             
     
     def save_text(self):
@@ -204,7 +217,7 @@ class PDFExtractorGUI(QMainWindow):
             except Exception as e:
                 self.save_status_label.setStyleSheet("color: red; font-size: 13px;")
                 self.save_status_label.setText(f"Error during saving process: {e}")
-# ...existing code...
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = PDFExtractorGUI()
