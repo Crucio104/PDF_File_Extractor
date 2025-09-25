@@ -1,5 +1,21 @@
-PyQt5==5.15.9
-python-docx==1.1.0
-pdfplumber==0.10.3
-pytesseract==0.3.10
-Pillow==10.1.0
+# PDF Text Extractor Requirements
+# Core PDF processing
+pdfplumber>=0.10.0
+
+# OCR capabilities
+pytesseract>=0.3.10
+Pillow>=10.0.0
+
+# Word document support
+python-docx>=0.8.11
+
+# GUI framework
+PyQt5>=5.15.9
+
+# Type checking support (optional but recommended)
+typing-extensions>=4.7.1
+
+# Additional PIL dependencies for better image processing
+# These might be needed depending on your system
+# numpy>=1.24.0
+# opencv-python>=4.8.0
