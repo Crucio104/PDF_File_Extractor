@@ -18,10 +18,6 @@ A modern, feature-rich PDF text extraction tool with OCR capabilities built with
 - **Cancellation Support** - Cancel long-running extractions at any time
 - **Smart OCR** - Optionally use OCR only on pages without native text
 
-## Screenshots
-
-![Application Screenshot](https://via.placeholder.com/800x600?text=PDF+Text+Extractor+v2.0)
-
 ## Installation
 
 ### Prerequisites
